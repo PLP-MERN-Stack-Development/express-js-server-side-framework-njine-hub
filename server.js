@@ -1,16 +1,26 @@
 // server.js - Starter Express server for Week 2 assignment
 
-// Import required modules
 const express = require('express');
+const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
+const connectDB = require('./config/db');
+const logger = require('./middleware/logger');
+const authenticate = require('./middleware/auth');
+const productRoutes = require('./routes/products');
 
-// Initialize Express app
+// Load environment variables
+dotenv.config();
+
+// Initialize app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Connect to MongoDB
+connectDB();
+
 // Middleware setup
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(logger);
 
 // Sample in-memory products database
 let products = [
@@ -44,6 +54,7 @@ let products = [
 app.get('/', (req, res) => {
   res.send('Welcome to the Product API! Go to /api/products to see all products.');
 });
+app.use('/api/products', authenticate, productRoutes);
 
 // TODO: Implement the following routes:
 // GET /api/products - Get all products
@@ -56,6 +67,7 @@ app.get('/', (req, res) => {
 app.get('/api/products', (req, res) => {
   res.json(products);
 });
+
 
 // TODO: Implement custom middleware for:
 // - Request logging
